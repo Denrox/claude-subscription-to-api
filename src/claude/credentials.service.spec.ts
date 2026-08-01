@@ -1,7 +1,24 @@
-import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// A single-file bind mount can't be renamed over; simulate the kernel's EBUSY.
+const mount = vi.hoisted(() => ({ path: null as string | null }));
+vi.mock("fs", async (importActual) => {
+  const actual = await importActual<typeof import("fs")>();
+  return {
+    ...actual,
+    renameSync: (from: string, to: string) => {
+      if (mount.path !== null && to === mount.path) {
+        throw Object.assign(new Error(`EBUSY: resource busy or locked, rename '${from}' -> '${to}'`), {
+          code: "EBUSY",
+        });
+      }
+      return actual.renameSync(from, to);
+    },
+  };
+});
 import { config } from "../config";
 import { CredentialsService } from "./credentials.service";
 
@@ -15,6 +32,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  mount.path = null;
   config.paths.credentials = original.credentials;
   config.paths.cliConfig = original.cliConfig;
   rmSync(dir, { recursive: true, force: true });
@@ -107,6 +125,23 @@ describe("cli config", () => {
     expect(status.exists).toBe(true);
     expect(status.hasCompletedOnboarding).toBe(true);
     expect(status.account).toBe("you@example.com");
+  });
+
+  it("rewrites in place when the target is a bind-mounted file", () => {
+    const svc = new CredentialsService();
+    svc.writeCliConfig({ hasCompletedOnboarding: false });
+
+    mount.path = config.paths.cliConfig;
+    const status = svc.writeCliConfig({
+      hasCompletedOnboarding: true,
+      oauthAccount: { emailAddress: "you@example.com" },
+    });
+
+    expect(status.hasCompletedOnboarding).toBe(true);
+    expect(JSON.parse(readFileSync(config.paths.cliConfig, "utf8")).hasCompletedOnboarding).toBe(
+      true,
+    );
+    expect(existsSync(`${config.paths.cliConfig}.tmp`)).toBe(false);
   });
 
   it("rejects non-objects", () => {
