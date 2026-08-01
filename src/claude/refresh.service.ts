@@ -7,9 +7,6 @@ export interface RefreshResult {
   at: number;
   trigger: "boot" | "schedule" | "manual";
   ok: boolean;
-  // What actually changed on disk, not merely that the CLI ran. A steady run of
-  // rotated:false is normal and healthy — it means the token had plenty of life
-  // left. The value is that the CLI ran at all.
   rotated: boolean;
   expiresAtBefore: number | null;
   expiresAtAfter: number | null;
@@ -19,14 +16,6 @@ export interface RefreshResult {
 
 const HISTORY_LIMIT = 20;
 
-// Keeps the credentials alive for as long as the refresh token allows, by
-// pinging the CLI on a timer. Nothing else in this app runs the CLI, so without
-// this the tokens would sit untouched until they expired past recovery.
-//
-// There is no "still fresh, skip" short-circuit: the CLI rotates only when the
-// token is near ITS OWN expiry threshold, which we cannot observe from the
-// file. Gating on remaining lifetime would risk never pinging inside the CLI's
-// window, so every tick pings and the CLI decides.
 @Injectable()
 export class RefreshService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RefreshService.name);
@@ -46,7 +35,6 @@ export class RefreshService implements OnModuleInit, OnModuleDestroy {
     this.timer = setInterval(() => {
       void this.refresh("schedule").catch(() => undefined);
     }, config.claude.refreshIntervalMs);
-    // Don't hold the event loop open on shutdown.
     this.timer.unref?.();
 
     if (config.claude.refreshOnBoot) {
@@ -78,9 +66,6 @@ export class RefreshService implements OnModuleInit, OnModuleDestroy {
     return this.inFlight !== null;
   }
 
-  // Concurrent callers (the timer firing while someone clicks "Refresh now")
-  // share one CLI run rather than racing two of them at the same credentials
-  // file — the race is what blanks tokens.
   refresh(trigger: RefreshResult["trigger"]): Promise<RefreshResult> {
     if (this.inFlight) return this.inFlight;
     this.inFlight = this.runRefresh(trigger).finally(() => {
@@ -116,8 +101,6 @@ export class RefreshService implements OnModuleInit, OnModuleDestroy {
     if (!before.exists) {
       return record(false, "no credentials file — upload one first", null);
     }
-    // Blank tokens never self-heal; a keep-warm run can't fix them and would
-    // just fail. Say so plainly instead of surfacing a bare CLI exit code.
     if (before.hasTokens === false) {
       return record(false, "credentials are blank — re-authenticate and upload again", null);
     }

@@ -2,14 +2,6 @@ import { Form, useNavigation } from "react-router";
 import { apiGet, apiSend } from "~/lib/api.server";
 import type { Route } from "./+types/home";
 
-// The whole app: status of the two files the Claude CLI needs, upload forms for
-// each, and the keep-warm ping. Both files are written straight into the host
-// user's home (bind-mounted), so whatever this page uploads is what an SSH
-// session running `claude` will use.
-//
-// The loader only ever sees non-secret metadata — the API never returns file
-// contents — so both textareas are upload-only and start empty.
-
 interface Status {
   credentials: {
     exists: boolean;
@@ -94,8 +86,6 @@ export async function action({ request }: Route.ActionArgs) {
   const path = intent === "cli-config" ? "/api/claude/cli-config" : "/api/claude/credentials";
   const raw = String(form.get("json") ?? "").trim();
   if (!raw) return { intent, error: "Paste the JSON first." };
-  // Parsed here as well as server-side purely so a typo comes back as a clear
-  // message instead of a 400 body.
   try {
     JSON.parse(raw);
   } catch (err) {
@@ -169,7 +159,6 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
         </Form>
       </header>
 
-      {/* ---- keep-warm ------------------------------------------------- */}
       <section className="mt-8 rounded-md border border-slate-200 bg-white p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -219,7 +208,6 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
         </div>
       </section>
 
-      {/* ---- credentials ----------------------------------------------- */}
       <section className="mt-8">
         <h2 className="text-base font-semibold text-slate-800">
           Credentials{" "}
@@ -228,10 +216,6 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
         <div className="mt-3 rounded-md border border-slate-200 bg-white p-4 text-sm">
           {credentials.exists ? (
             <>
-              {/* Blank tokens in an otherwise intact file: the CLI clears them when a
-                  refresh is rejected (e.g. another machine holding the same credentials
-                  rotated the refresh token). Unlike an expired token this never
-                  self-heals, so call it out loudly. */}
               {credentials.hasTokens === false && (
                 <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-red-700">
                   <span className="font-medium">Not logged in.</span> The file is present but its
@@ -289,7 +273,6 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
         </Form>
       </section>
 
-      {/* ---- ~/.claude.json --------------------------------------------- */}
       <section className="mt-8">
         <h2 className="text-base font-semibold text-slate-800">
           CLI config{" "}
@@ -341,7 +324,6 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
         </details>
       </section>
 
-      {/* ---- ping history ------------------------------------------------ */}
       {refresh.recent.length > 0 && (
         <section className="mt-8">
           <h2 className="text-base font-semibold text-slate-800">Recent pings</h2>

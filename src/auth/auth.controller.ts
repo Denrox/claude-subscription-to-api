@@ -5,14 +5,6 @@ import { clearSessionCookie, serializeSessionCookie } from "./auth.middleware";
 import { clientKey, loginThrottle, sessionSecret } from "./runtime";
 import { issueSession, verifyPassword } from "./session";
 
-// Login is a plain form POST handled server-side (not an RR7 action) so the
-// session secret and the password check stay in one place — the API — and the
-// UI never needs either. Both endpoints are excluded from the /api prefix in
-// main.ts so the form can post to /login.
-//
-// Redirect targets are validated to a single leading slash: `next` comes
-// straight off the query string, and `//evil.example` is a protocol-relative
-// URL that a naive redirect would happily follow off-site.
 function safeNext(raw: unknown): string {
   const s = typeof raw === "string" ? raw : "";
   if (!s.startsWith("/") || s.startsWith("//")) return "/";
@@ -49,9 +41,6 @@ export class AuthController {
     res.redirect(302, next);
   }
 
-  // Stateless sessions can't be revoked server-side, so logout is exactly
-  // "drop the cookie". A stolen cookie stays valid until it expires — that is
-  // the trade this session design makes; rotate SESSION_SECRET to kill all.
   @Post("logout")
   logout(@Res() res: Response): void {
     res.setHeader("Set-Cookie", clearSessionCookie());

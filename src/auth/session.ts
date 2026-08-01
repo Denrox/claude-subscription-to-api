@@ -1,16 +1,5 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "crypto";
 
-// Stateless sessions: the cookie IS the session. Value is
-//   <expiryMs>.<base64url HMAC-SHA256(secret, expiryMs)>
-// so there is nothing to store server-side and nothing to evict — a restart
-// keeps everyone logged in as long as SESSION_SECRET is stable. There is only
-// one principal (the operator), so the token carries no identity, just an
-// expiry the server can verify.
-//
-// Consequence worth knowing: sessions cannot be revoked individually. Rotating
-// SESSION_SECRET invalidates all of them at once, which is the intended big
-// red button.
-
 export const SESSION_COOKIE = "rc_session";
 
 function sign(secret: string, payload: string): string {
@@ -22,9 +11,6 @@ export function issueSession(secret: string, ttlMs: number, now = Date.now()): s
   return `${exp}.${sign(secret, exp)}`;
 }
 
-// Returns the expiry when the token is authentic and unexpired, else null.
-// Every failure path returns null rather than throwing: callers treat "bad
-// cookie" and "no cookie" identically.
 export function verifySession(
   secret: string,
   token: string | undefined | null,
@@ -41,8 +27,6 @@ export function verifySession(
   return expMs > now ? expMs : null;
 }
 
-// Constant-time string compare. timingSafeEqual throws on length mismatch, so
-// length is checked first — that leaks only the length, never the contents.
 export function equalStrings(a: string, b: string): boolean {
   const ab = Buffer.from(a, "utf8");
   const bb = Buffer.from(b, "utf8");
@@ -50,17 +34,8 @@ export function equalStrings(a: string, b: string): boolean {
   return timingSafeEqual(ab, bb);
 }
 
-// ---- password ------------------------------------------------------------
-
 const SCRYPT_KEYLEN = 32;
 
-// Format: scrypt$<base64 salt>$<base64 key>. scrypt is used over bcrypt/argon2
-// purely because it ships in node:crypto — no native module to build in the
-// image for what is a single-password login.
-// The salt is typed as Uint8Array rather than Buffer so a salt decoded from
-// base64 (Buffer<ArrayBufferLike>) and a fresh randomBytes salt (Buffer<
-// ArrayBuffer>) both fit — those two Buffer types are not assignable to each
-// other under @types/node.
 export function hashPassword(password: string, salt: Uint8Array = randomBytes(16)): string {
   const key = scryptSync(password, salt, SCRYPT_KEYLEN);
   return `scrypt$${Buffer.from(salt).toString("base64")}$${key.toString("base64")}`;
@@ -87,12 +62,6 @@ export function verifyPassword(
   return false;
 }
 
-// ---- login throttle ------------------------------------------------------
-
-// In-memory, per-IP failure counter. Deliberately not persisted: this exists to
-// blunt online guessing against a single shared password, and a restart-clears
-// window is an acceptable trade for zero state. Entries are pruned lazily on
-// each check, so an idle process holds nothing.
 export class LoginThrottle {
   private readonly failures = new Map<string, number[]>();
 

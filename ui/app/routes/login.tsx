@@ -1,15 +1,10 @@
 import type { Route } from "./+types/login";
 
-// Render-only. The form posts to Nest's POST /login (a plain form post, not an
-// RR7 action) so the password check and the session cookie stay server-side in
-// one place. Errors come back as ?error=… on the redirect.
 export function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const next = url.searchParams.get("next") ?? "/";
   return {
     error: url.searchParams.get("error"),
-    // Only same-site paths are honored, matching the API's own check — an
-    // attacker-supplied `next` must not turn the login page into an open redirect.
     next: next.startsWith("/") && !next.startsWith("//") ? next : "/",
   };
 }

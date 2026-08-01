@@ -6,9 +6,6 @@ services:
     container_name: remote-clode
     restart: unless-stopped
 
-    # Run as the host user, so every file this app writes into the mounted home
-    # is owned by them — that is what makes the credentials usable by an SSH
-    # session. Set HOST_UID/HOST_GID in .env (`id -u` / `id -g`).
     user: "${HOST_UID:?set HOST_UID in .env}:${HOST_GID:?set HOST_GID in .env}"
 
     env_file:
@@ -20,20 +17,11 @@ services:
       CLAUDE_HOME: /home/app
 
     ports:
-      # Loopback only. Publish it wider (or front it with a TLS reverse proxy
-      # and set COOKIE_SECURE=1) once you actually want it reachable.
-      - "127.0.0.1:${HOST_PORT:-3000}:3000"
+      - "${HOST_PORT:-80}:3000"
 
     volumes:
-      # The host user's real Claude auth. Read-write: the app writes uploads
-      # here, and the CLI rewrites .credentials.json on every token rotation.
-      # ~/.claude.json is a FILE mapping — docker creates a directory if the
-      # host path is missing, so make sure it exists first (see README).
       - ${HOST_HOME:?set HOST_HOME in .env}/.claude:/home/app/.claude
       - ${HOST_HOME}/.claude.json:/home/app/.claude.json
-
-      # The host's own CLI, read-only. `claude` in ~/.local/bin is a symlink to
-      # the versioned binary; docker resolves it and mounts the real file.
       - ${HOST_CLAUDE_BIN:-${HOST_HOME}/.local/bin/claude}:/usr/local/bin/claude:ro
 
     healthcheck:

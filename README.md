@@ -15,7 +15,7 @@ Node + NestJS + React Router 7, one container, one process, one port.
 ## How it works
 
 ```
-browser ──► :3000 ──┬── /login, /logout, /api/*   NestJS
+browser ──► :80 ────┬── /login, /logout, /api/*   NestJS
                     └── everything else           React Router 7 (SSR)
                               │
                               └─ loaders call /api over loopback, forwarding your cookie
@@ -48,7 +48,7 @@ $EDITOR .env          # HOST_HOME, HOST_UID/HOST_GID (id -u / id -g), password
 npm run hash-password # optional: put the hash in AUTH_PASSWORD_HASH instead
 
 docker compose up -d --build
-xdg-open http://127.0.0.1:3000
+xdg-open http://localhost
 ```
 
 Then, on a machine where you're already logged in, copy the contents of

@@ -5,8 +5,6 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { config } from "../config";
 import { CredentialsService } from "./credentials.service";
 
-// The service reads its paths from the shared config object; point them at a
-// throwaway dir so the tests never touch a real ~/.claude.
 let dir: string;
 const original = { credentials: config.paths.credentials, cliConfig: config.paths.cliConfig };
 

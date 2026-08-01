@@ -3,18 +3,10 @@ import { spawn } from "child_process";
 import { existsSync, mkdirSync } from "fs";
 import { config } from "../config";
 
-// Spawns the Claude CLI. The container never mints or refreshes tokens itself:
-// the CLI owns ~/.claude/.credentials.json and rotates the refresh token on
-// every run, so a second refresher racing it is exactly what produces the
-// blanked-token state that never self-heals. We just make the CLI run, and let
-// it refresh itself.
 @Injectable()
 export class ClaudeService {
   private readonly logger = new Logger(ClaudeService.name);
 
-  // Minimal throwaway run whose only purpose is the side effect: the CLI
-  // refreshes its credentials from the stored refresh token when the access
-  // token is near expiry. Cost is one haiku "hi" per tick.
   async ping(): Promise<{ output: string; durationMs: number }> {
     const started = Date.now();
     const output = await this.run("hi", config.claude.refreshModel);
@@ -30,9 +22,6 @@ export class ClaudeService {
     }
   }
 
-  // `--dangerously-skip-permissions` keeps a headless run from blocking forever
-  // on a permission prompt. CLAUDECODE is stripped from the env so the CLI does
-  // not think it is nested inside another Claude Code session.
   private run(
     prompt: string,
     model: string | null,

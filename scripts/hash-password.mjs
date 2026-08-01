@@ -1,9 +1,4 @@
 #!/usr/bin/env node
-// Prints an AUTH_PASSWORD_HASH line for .env, so the plaintext password never
-// has to live in the environment (or in `docker inspect` output).
-//
-//   npm run hash-password -- 'my password'
-//   npm run hash-password            # prompts on stdin
 import { randomBytes, scryptSync } from "node:crypto";
 import { createInterface } from "node:readline/promises";
 
