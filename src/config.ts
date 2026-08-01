@@ -56,7 +56,7 @@ export const config = {
     // How often to ping. The CLI only rotates when the token is near ITS OWN
     // expiry threshold (measured on an ~8h token: a run with ~7h left rewrote
     // nothing), so this has to be comfortably shorter than the token lifetime.
-    refreshIntervalMs: int("REFRESH_INTERVAL_MS", 4 * 60 * 60 * 1000),
+    refreshIntervalMs: int("REFRESH_INTERVAL_MS", 2 * 60 * 60 * 1000),
     // Ping once shortly after boot, so a container that was down over the
     // token's lifetime refreshes immediately instead of at the first interval.
     refreshOnBoot: bool("REFRESH_ON_BOOT", true),

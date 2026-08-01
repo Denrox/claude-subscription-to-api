@@ -81,7 +81,7 @@ See `.env.example` for the full list. The ones that matter:
 | `SESSION_TTL_HOURS` | 720 | Cookie lifetime. |
 | `COOKIE_SECURE` | `0` | Set to `1` when serving over HTTPS. |
 | `TRUST_PROXY` | unset | Set (e.g. `1`) only behind a proxy, so login throttling sees real client IPs. |
-| `REFRESH_INTERVAL_MS` | `14400000` (4h) | Keep-alive ping period. Must stay well under the access token's lifetime (~8h observed). |
+| `REFRESH_INTERVAL_MS` |  `7200000` (2h) | Keep-alive ping period. Must stay well under the access token's lifetime (~8h observed). |
 | `CLAUDE_BIN` | `claude` | Path to the CLI. |
 | `CLAUDE_HOME` | the process's home | Root for `.claude/` and `.claude.json`. |
 
