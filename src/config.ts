@@ -2,6 +2,7 @@ import { homedir } from "os";
 import { join } from "path";
 
 const claudeHome = process.env.CLAUDE_HOME || homedir();
+const scratch = process.env.SCRATCH_DIR || "/tmp/remote-clode";
 
 function int(name: string, fallback: number): number {
   const raw = process.env[name];
@@ -14,6 +15,16 @@ function bool(name: string, fallback: boolean): boolean {
   const raw = process.env[name];
   if (raw === undefined || raw === "") return fallback;
   return raw === "1" || raw.toLowerCase() === "true";
+}
+
+function list(name: string, fallback: string[]): string[] {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const items = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return items.length ? items : fallback;
 }
 
 export const config = {
@@ -39,11 +50,29 @@ export const config = {
     refreshOnBootDelayMs: int("REFRESH_ON_BOOT_DELAY_MS", 15000),
   },
 
+  api: {
+    enabled: bool("API_ENABLED", true),
+    tokensPath:
+      process.env.API_TOKENS_PATH || join(claudeHome, ".claude", "remote-clode-tokens.json"),
+    timeoutMs: int("API_TIMEOUT_MS", 10 * 60 * 1000),
+    maxConcurrent: int("API_MAX_CONCURRENT", 2),
+    allowTools: bool("API_ALLOW_TOOLS", false),
+    systemPromptMode: process.env.API_SYSTEM_PROMPT_MODE === "append" ? "append" : "replace",
+    partialMessages: bool("API_PARTIAL_MESSAGES", true),
+    workDir: process.env.API_WORK_DIR || scratch,
+    models: list("API_MODELS", ["claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5"]),
+  },
+
+  docs: {
+    enabled: bool("DOCS_ENABLED", true),
+    swaggerUiVersion: process.env.SWAGGER_UI_VERSION || "5.17.14",
+  },
+
   paths: {
     credentials:
       process.env.CLAUDE_CREDENTIALS_PATH || join(claudeHome, ".claude", ".credentials.json"),
     cliConfig: process.env.CLAUDE_CONFIG_PATH || join(claudeHome, ".claude.json"),
-    scratch: process.env.SCRATCH_DIR || "/tmp/remote-clode",
+    scratch,
   },
 
   uiBuildDir: process.env.UI_BUILD_DIR || join(__dirname, "..", "ui", "build"),

@@ -8,10 +8,14 @@ import { AppModule } from "./app.module";
 import { authMiddleware } from "./auth/auth.middleware";
 import { passwordConfigured, sessionSecretIsEphemeral } from "./auth/runtime";
 import { config } from "./config";
+import { newId } from "./messages/anthropic";
 import { createUiHandler } from "./ui-handler";
 
+const NEST_EXACT = new Set(["/health", "/docs", "/openapi.json"]);
+
 function isNestPath(req: Request): boolean {
-  if (req.path === "/health" || req.path.startsWith("/api/")) return true;
+  if (NEST_EXACT.has(req.path)) return true;
+  if (req.path.startsWith("/api/") || req.path.startsWith("/v1/")) return true;
   return req.method === "POST" && (req.path === "/login" || req.path === "/logout");
 }
 
@@ -19,6 +23,15 @@ function onlyForNest(mw: (req: Request, res: Response, next: NextFunction) => vo
   return (req: Request, res: Response, next: NextFunction) => {
     if (!isNestPath(req)) return next();
     return mw(req, res, next);
+  };
+}
+
+function requestIds() {
+  return (req: Request & { requestId?: string }, res: Response, next: NextFunction) => {
+    if (!req.path.startsWith("/v1/")) return next();
+    req.requestId = newId("req");
+    res.setHeader("request-id", req.requestId);
+    next();
   };
 }
 
@@ -37,11 +50,14 @@ async function bootstrap() {
   app.disable("x-powered-by");
   if (process.env.TRUST_PROXY) app.set("trust proxy", process.env.TRUST_PROXY);
 
-  app.setGlobalPrefix("api", { exclude: ["login", "logout", "health"] });
+  app.setGlobalPrefix("api", {
+    exclude: ["login", "logout", "health", "docs", "openapi.json", "v1/messages", "v1/models"],
+  });
 
   app.use(onlyForNest(json({ limit: "5mb" })));
   app.use(onlyForNest(urlencoded({ extended: false, limit: "1mb" })));
 
+  app.use(requestIds());
   app.use(authMiddleware());
 
   await mountUi(app, logger);
@@ -49,6 +65,14 @@ async function bootstrap() {
   await app.listen(config.port, "0.0.0.0");
   logger.log(`remote-clode listening on :${config.port}`);
   logger.log(`Managing ${config.paths.credentials} and ${config.paths.cliConfig}`);
+  if (config.api.enabled) {
+    logger.log(
+      `CLI proxy on /v1/messages (tools ${config.api.allowTools ? "enabled" : "disabled"}, ` +
+        `max ${config.api.maxConcurrent} concurrent), tokens in ${config.api.tokensPath}`,
+    );
+  } else {
+    logger.warn("API_ENABLED=0 — /v1 rejects every request");
+  }
 }
 
 async function mountUi(app: NestExpressApplication, logger: Logger): Promise<void> {

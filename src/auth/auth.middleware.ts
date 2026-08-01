@@ -4,7 +4,7 @@ import { sessionSecret } from "./runtime";
 import { SESSION_COOKIE, verifySession } from "./session";
 
 const PUBLIC_EXACT = new Set(["/login", "/logout", "/health", "/favicon.ico"]);
-const PUBLIC_PREFIXES = ["/assets/"];
+const PUBLIC_PREFIXES = ["/assets/", "/v1/"];
 
 function isPublic(path: string): boolean {
   if (PUBLIC_EXACT.has(path)) return true;

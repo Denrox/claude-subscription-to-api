@@ -1,14 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-  statSync,
-  writeFileSync,
-} from "fs";
-import { dirname } from "path";
+import { existsSync, readFileSync, statSync } from "fs";
+import { writeAtomicJson } from "../atomic-write";
 import { config } from "../config";
 
 export interface CredentialsStatus {
@@ -84,7 +76,7 @@ export class CredentialsService {
     if (oauth.expiresAt !== undefined && typeof oauth.expiresAt !== "number") {
       throw new BadRequestException("claudeAiOauth.expiresAt, when present, must be a number");
     }
-    writeAtomic(config.paths.credentials, data);
+    writeAtomicJson(config.paths.credentials, data);
     return this.readCredentialsStatus();
   }
 
@@ -116,7 +108,7 @@ export class CredentialsService {
     if (!data || typeof data !== "object" || Array.isArray(data)) {
       throw new BadRequestException("config must be a JSON object");
     }
-    writeAtomic(config.paths.cliConfig, data);
+    writeAtomicJson(config.paths.cliConfig, data);
     return this.readCliConfigStatus();
   }
 }
@@ -135,23 +127,5 @@ function mtime(path: string): number | null {
     return statSync(path).mtimeMs;
   } catch {
     return null;
-  }
-}
-
-function writeAtomic(file: string, data: unknown): void {
-  const dir = dirname(file);
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true, mode: 0o700 });
-  const contents = JSON.stringify(data, null, 2) + "\n";
-  const tmp = `${file}.tmp`;
-  writeFileSync(tmp, contents, { mode: 0o600 });
-  try {
-    renameSync(tmp, file);
-  } catch (err: any) {
-    // A single-file bind mount (docker-compose maps ~/.claude.json straight onto
-    // /home/app/.claude.json) is a mount point, and the kernel refuses to rename
-    // over it. Fall back to rewriting in place, which the mount does allow.
-    if (err?.code !== "EBUSY" && err?.code !== "EXDEV" && err?.code !== "EPERM") throw err;
-    writeFileSync(file, contents, { mode: 0o600 });
-    rmSync(tmp, { force: true });
   }
 }

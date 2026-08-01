@@ -1,4 +1,4 @@
-import { Form, useNavigation } from "react-router";
+import { Form, Link, useNavigation } from "react-router";
 import { apiGet, apiSend } from "~/lib/api.server";
 import type { Route } from "./+types/home";
 
@@ -152,11 +152,19 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
             this host uses the same auth. Never returned to this page.
           </p>
         </div>
-        <Form method="post" action="/logout">
-          <button className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100">
-            Sign out
-          </button>
-        </Form>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            to="/tokens"
+            className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
+          >
+            API tokens
+          </Link>
+          <Form method="post" action="/logout">
+            <button className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100">
+              Sign out
+            </button>
+          </Form>
+        </div>
       </header>
 
       <section className="mt-8 rounded-md border border-slate-200 bg-white p-4">
