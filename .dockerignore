@@ -1,0 +1,8 @@
+node_modules
+ui/node_modules
+dist
+ui/build
+ui/.react-router
+.git
+.env
+*.log

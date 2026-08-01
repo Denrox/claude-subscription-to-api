@@ -1,0 +1,11 @@
+node_modules/
+dist/
+ui/build/
+ui/.react-router/
+*.log
+
+# Holds the UI password and the host's uid/paths.
+.env
+
+# Local Claude Code settings
+.claude/settings.local.json

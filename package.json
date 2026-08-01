@@ -1,0 +1,32 @@
+{
+  "name": "remote-clode",
+  "version": "0.1.0",
+  "description": "Password-protected UI for uploading and keeping alive the Claude CLI's credentials in the host user's home",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && npm --prefix ui run build",
+    "build:api": "tsc -p tsconfig.json",
+    "build:ui": "npm --prefix ui run build",
+    "start": "node dist/main.js",
+    "dev": "tsc -w -p tsconfig.json & npm --prefix ui run build -- --watch & node --watch dist/main.js",
+    "prestart": "npm run build",
+    "hash-password": "node scripts/hash-password.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@nestjs/common": "^10.4.15",
+    "@nestjs/core": "^10.4.15",
+    "@nestjs/platform-express": "^10.4.15",
+    "express": "^4.21.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.9"
+  }
+}
