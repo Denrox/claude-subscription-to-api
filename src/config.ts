@@ -2,7 +2,7 @@ import { homedir } from "os";
 import { join } from "path";
 
 const claudeHome = process.env.CLAUDE_HOME || homedir();
-const scratch = process.env.SCRATCH_DIR || "/tmp/remote-clode";
+const scratch = process.env.SCRATCH_DIR || "/tmp/claude-subscription-to-api";
 
 function int(name: string, fallback: number): number {
   const raw = process.env[name];
@@ -53,7 +53,7 @@ export const config = {
   api: {
     enabled: bool("API_ENABLED", true),
     tokensPath:
-      process.env.API_TOKENS_PATH || join(claudeHome, ".claude", "remote-clode-tokens.json"),
+      process.env.API_TOKENS_PATH || join(claudeHome, ".claude", "claude-subscription-to-api-tokens.json"),
     timeoutMs: int("API_TIMEOUT_MS", 10 * 60 * 1000),
     maxConcurrent: int("API_MAX_CONCURRENT", 2),
     allowTools: bool("API_ALLOW_TOOLS", false),

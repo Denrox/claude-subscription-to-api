@@ -38,13 +38,13 @@ export function openapiDocument(): Record<string, unknown> {
   return {
     openapi: "3.1.0",
     info: {
-      title: "remote-clode API",
+      title: "claude-subscription-to-api API",
       version: "0.1.0",
       description: [
         "This app has two surfaces.",
         "",
         "`/v1/*` stands in front of this host's Claude CLI and answers in the shape of the",
-        "Anthropic API. A request signed with a remote-clode API token becomes a `claude -p`",
+        "Anthropic API. A request signed with a claude-subscription-to-api API token becomes a `claude -p`",
         "run, and the answer of the CLI comes back as a Messages API response. So an Anthropic",
         "SDK pointed at this base URL works without changes for plain text conversations.",
         "",
@@ -322,7 +322,7 @@ export function openapiDocument(): Record<string, unknown> {
           type: "apiKey",
           in: "header",
           name: "x-api-key",
-          description: "A remote-clode API token, in the place where the real Claude API waits for its key.",
+          description: "A claude-subscription-to-api API token, in the place where the real Claude API waits for its key.",
         },
         bearerAuth: {
           type: "http",

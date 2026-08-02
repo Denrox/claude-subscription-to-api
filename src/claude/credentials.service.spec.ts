@@ -25,7 +25,7 @@ let dir: string;
 const original = { credentials: config.paths.credentials, cliConfig: config.paths.cliConfig };
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "remote-clode-test-"));
+  dir = mkdtempSync(join(tmpdir(), "claude-subscription-to-api-test-"));
   config.paths.credentials = join(dir, ".claude", ".credentials.json");
   config.paths.cliConfig = join(dir, ".claude.json");
 });

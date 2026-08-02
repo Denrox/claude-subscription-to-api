@@ -1,4 +1,4 @@
-# remote-clode
+# claude-subscription-to-api
 
 Keeps the Claude CLI on this host logged in, and gives access to it over HTTP at
 `/v1/messages`, in the same shape the Anthropic API uses. The API and the UI are

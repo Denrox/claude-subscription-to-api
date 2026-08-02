@@ -1,9 +1,9 @@
 services:
-  remote-clode:
+  claude-subscription-to-api:
     build:
       context: .
-    image: remote-clode:0.1.0
-    container_name: remote-clode
+    image: claude-subscription-to-api:0.1.0
+    container_name: claude-subscription-to-api
     restart: unless-stopped
 
     user: "${HOST_UID:?set HOST_UID in .env}:${HOST_GID:?set HOST_GID in .env}"

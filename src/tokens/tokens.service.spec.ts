@@ -9,7 +9,7 @@ let dir: string;
 const original = config.api.tokensPath;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "remote-clode-tokens-"));
+  dir = mkdtempSync(join(tmpdir(), "claude-subscription-to-api-tokens-"));
   config.api.tokensPath = join(dir, "tokens.json");
 });
 

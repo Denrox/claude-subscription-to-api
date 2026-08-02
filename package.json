@@ -1,5 +1,5 @@
 {
-  "name": "remote-clode",
+  "name": "claude-subscription-to-api",
   "version": "0.1.0",
   "description": "Password-protected UI for uploading and keeping alive the Claude CLI's credentials in the host user's home",
   "main": "dist/main.js",

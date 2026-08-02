@@ -63,7 +63,7 @@ async function bootstrap() {
   await mountUi(app, logger);
 
   await app.listen(config.port, "0.0.0.0");
-  logger.log(`remote-clode listening on :${config.port}`);
+  logger.log(`claude-subscription-to-api listening on :${config.port}`);
   logger.log(`Managing ${config.paths.credentials} and ${config.paths.cliConfig}`);
   if (config.api.enabled) {
     logger.log(

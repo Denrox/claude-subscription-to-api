@@ -1,5 +1,5 @@
 {
-  "name": "remote-clode-ui",
+  "name": "claude-subscription-to-api-ui",
   "private": true,
   "type": "module",
   "scripts": {

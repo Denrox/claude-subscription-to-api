@@ -22,7 +22,7 @@ export class DocsController {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>remote-clode API</title>
+    <title>claude-subscription-to-api API</title>
     <link rel="stylesheet" href="${base}/swagger-ui.css" />
     <style>
       body { margin: 0; background: #fafafa; }
@@ -33,7 +33,7 @@ export class DocsController {
     </style>
   </head>
   <body>
-    <div class="rc-nav"><a href="/">&larr; remote-clode</a> &nbsp;·&nbsp; <a href="/tokens">API tokens</a> &nbsp;·&nbsp; <a href="/openapi.json">openapi.json</a></div>
+    <div class="rc-nav"><a href="/">&larr; claude-subscription-to-api</a> &nbsp;·&nbsp; <a href="/tokens">API tokens</a> &nbsp;·&nbsp; <a href="/openapi.json">openapi.json</a></div>
     <div id="swagger"></div>
     <script src="${base}/swagger-ui-bundle.js"></script>
     <script>

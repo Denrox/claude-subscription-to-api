@@ -29,10 +29,10 @@ ENV NODE_ENV=production \
     HOME=/home/app \
     CLAUDE_HOME=/home/app \
     CLAUDE_BIN=/usr/local/bin/claude \
-    SCRATCH_DIR=/tmp/remote-clode \
+    SCRATCH_DIR=/tmp/claude-subscription-to-api \
     DISABLE_AUTOUPDATER=1
 
-RUN mkdir -p /home/app /tmp/remote-clode && chmod 777 /home/app /tmp/remote-clode
+RUN mkdir -p /home/app /tmp/claude-subscription-to-api && chmod 777 /home/app /tmp/claude-subscription-to-api
 
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
