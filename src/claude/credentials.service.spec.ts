@@ -3,7 +3,6 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// A single-file bind mount can't be renamed over; simulate the kernel's EBUSY.
 const mount = vi.hoisted(() => ({ path: null as string | null }));
 vi.mock("fs", async (importActual) => {
   const actual = await importActual<typeof import("fs")>();

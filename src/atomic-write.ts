@@ -10,9 +10,6 @@ export function writeAtomicJson(file: string, data: unknown): void {
   try {
     renameSync(tmp, file);
   } catch (err: any) {
-    // A single-file bind mount (docker-compose maps ~/.claude.json straight onto
-    // /home/app/.claude.json) is a mount point, and the kernel refuses to rename
-    // over it. Fall back to rewriting in place, which the mount does allow.
     if (err?.code !== "EBUSY" && err?.code !== "EXDEV" && err?.code !== "EPERM") throw err;
     writeFileSync(file, contents, { mode: 0o600 });
     rmSync(tmp, { force: true });
