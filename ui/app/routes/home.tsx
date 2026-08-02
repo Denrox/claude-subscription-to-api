@@ -176,8 +176,8 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
             <h2 className="text-base font-semibold text-slate-800">Keep-alive</h2>
             <p className="mt-1 text-sm text-slate-500">
               Runs the CLI every {Math.round(refresh.intervalMs / 60000)} min so it rotates its own
-              tokens. The app does not do the OAuth exchange itself. Two refreshers working on the
-              same file are what leaves the tokens blank.
+              tokens. The app does not do the OAuth exchange itself. If two refreshers work on
+              the same file, the tokens become empty.
             </p>
           </div>
           <Form method="post">
