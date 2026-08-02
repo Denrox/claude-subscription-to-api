@@ -1,8 +1,8 @@
 # remote-clode
 
 Keeps the Claude CLI on this host logged in, and gives access to it over HTTP at
-`/v1/messages`, in the same shape the Anthropic API uses. NestJS plus React
-Router 7, one container, one process, one port.
+`/v1/messages`, in the same shape the Anthropic API uses. The API and the UI are
+NestJS and React Router 7 inside the same Node process.
 
 I made it because I have a subscription and no API key, and I still wanted to
 test clients that talk to the API.
@@ -58,7 +58,7 @@ one prompt with `Human:` and `Assistant:` labels. Errors use the real error
 envelope, so the official SDKs retry the way they should. Billing goes to the
 subscription and not per token.
 
-`API_ALLOW_TOOLS=1` gives everyone who holds a token a shell on this host. This
+`API_ALLOW_TOOLS=1` gives everyone with a token a shell on this host. This
 is for a homelab, not for the internet.
 
 `GET /docs` lists the endpoints. Config lives in `.env.example`.

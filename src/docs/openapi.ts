@@ -41,7 +41,7 @@ export function openapiDocument(): Record<string, unknown> {
       title: "remote-clode API",
       version: "0.1.0",
       description: [
-        "Two surfaces on one port.",
+        "This app has two surfaces.",
         "",
         "`/v1/*` stands in front of this host's Claude CLI and answers in the shape of the",
         "Anthropic API. A request signed with a remote-clode API token becomes a `claude -p`",
