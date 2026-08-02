@@ -79,7 +79,10 @@ export async function action({ request }: Route.ActionArgs) {
     if (!res.ok) return { intent, error: await res.text() };
     const result = (await res.json()) as RefreshResult;
     return result.ok
-      ? { intent, message: result.rotated ? "Tokens rotated." : "CLI pinged; no rotation needed." }
+      ? {
+          intent,
+          message: result.rotated ? "Tokens rotated." : "The CLI answered. No rotation was needed.",
+        }
       : { intent, error: result.error ?? "Ping failed." };
   }
 
@@ -97,12 +100,12 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 function fmt(ts: number | null | undefined): string {
-  if (!ts) return "—";
+  if (!ts) return "-";
   return new Date(ts).toLocaleString();
 }
 
 function since(ts: number | null | undefined): string {
-  if (!ts) return "—";
+  if (!ts) return "-";
   const mins = Math.round((Date.now() - ts) / 60000);
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m ago`;
@@ -149,7 +152,7 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
           <h1 className="text-xl font-semibold tracking-tight">Claude credentials</h1>
           <p className="mt-1 text-sm text-slate-500">
             Written straight into <code className="font-mono">{home}</code>, so an SSH session on
-            this host uses the same auth. Never returned to this page.
+            this host uses the same auth. This page never shows them back.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -173,8 +176,8 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
             <h2 className="text-base font-semibold text-slate-800">Keep-alive</h2>
             <p className="mt-1 text-sm text-slate-500">
               Runs the CLI every {Math.round(refresh.intervalMs / 60000)} min so it rotates its own
-              tokens. The app never performs the OAuth exchange itself — two refreshers racing the
-              same file is what blanks the tokens.
+              tokens. The app does not do the OAuth exchange itself. Two refreshers working on the
+              same file are what leaves the tokens blank.
             </p>
           </div>
           <Form method="post">
@@ -226,17 +229,17 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
             <>
               {credentials.hasTokens === false && (
                 <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-red-700">
-                  <span className="font-medium">Not logged in.</span> The file is present but its
-                  token fields are empty, so every run fails until you re-authenticate. This does
-                  not recover on its own — run{" "}
+                  <span className="font-medium">Not logged in.</span> The file is here, but its
+                  token fields are empty, so every run fails until you log in again. This does not
+                  repair itself. Run{" "}
                   <code className="font-mono text-xs">claude setup-token</code> on a machine you
-                  trust and upload the result below.
+                  trust, and upload the result below.
                 </p>
               )}
               {credentials.hasRefreshToken === false && credentials.hasTokens && (
                 <p className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-amber-800">
-                  No refresh token — the keep-alive ping cannot extend this session. It dies at the
-                  expiry below.
+                  No refresh token, so the keep-alive ping cannot extend this session. It stops at
+                  the expiry below.
                 </p>
               )}
               <dl className="grid grid-cols-[8rem_1fr] gap-y-1 text-slate-600">
@@ -246,7 +249,7 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
                   {credentials.hasTokens === false && <Badge tone="bad">no tokens</Badge>}
                 </dd>
                 <dt className="text-slate-400">Plan</dt>
-                <dd>{credentials.subscriptionType ?? "—"}</dd>
+                <dd>{credentials.subscriptionType ?? "-"}</dd>
                 <dt className="text-slate-400">Expires</dt>
                 <dd>
                   {fmt(credentials.expiresAt)}
@@ -256,11 +259,11 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
                 <dt className="text-slate-400">File updated</dt>
                 <dd>{since(credentials.updatedAt)}</dd>
                 <dt className="text-slate-400">Scopes</dt>
-                <dd className="font-mono text-xs">{credentials.scopes?.join(", ") ?? "—"}</dd>
+                <dd className="font-mono text-xs">{credentials.scopes?.join(", ") ?? "-"}</dd>
               </dl>
             </>
           ) : (
-            <p className="text-slate-500">No credentials file — the CLI is unauthenticated.</p>
+            <p className="text-slate-500">No credentials file, so the CLI is not logged in.</p>
           )}
         </div>
         <Form method="post" className="mt-3 space-y-3">
@@ -294,18 +297,18 @@ export default function Home({ loaderData, actionData }: Route.ComponentProps) {
               <dt className="text-slate-400">Onboarded</dt>
               <dd>
                 {cliConfig.hasCompletedOnboarding === null
-                  ? "—"
+                  ? "-"
                   : String(cliConfig.hasCompletedOnboarding)}
               </dd>
               <dt className="text-slate-400">Account</dt>
-              <dd>{cliConfig.account ?? "—"}</dd>
+              <dd>{cliConfig.account ?? "-"}</dd>
               <dt className="text-slate-400">File updated</dt>
               <dd>{since(cliConfig.updatedAt)}</dd>
             </dl>
           ) : (
             <p className="text-slate-500">
-              No config file — the CLI may run first-time onboarding. Upload your{" "}
-              <code className="font-mono">~/.claude.json</code> to avoid that.
+              No config file, so the CLI can start its first-time onboarding. Upload your{" "}
+              <code className="font-mono">~/.claude.json</code> to avoid this.
             </p>
           )}
         </div>

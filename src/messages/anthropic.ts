@@ -55,7 +55,7 @@ export function normalizeRequest(body: any): NormalizedRequest {
   }
   if (body.tools !== undefined || body.tool_choice !== undefined) {
     throw invalidRequest(
-      "tools are not supported by this proxy — the CLI owns its own tool set",
+      "this proxy does not support tools, because the CLI has its own tools",
     );
   }
   if (!Array.isArray(body.messages) || body.messages.length === 0) {
@@ -100,7 +100,7 @@ export function contentToText(content: unknown, path: string): string {
     }
     if (block.type !== "text" || typeof block.text !== "string") {
       throw invalidRequest(
-        `${path}.content.${index}: only "text" blocks are supported by this proxy (got "${block.type}")`,
+        `${path}.content.${index}: this proxy supports only "text" blocks (got "${block.type}")`,
       );
     }
     parts.push(block.text);
@@ -121,8 +121,8 @@ export function flattenMessages(turns: { role: "user" | "assistant"; text: strin
     .map((turn) => `${turn.role === "user" ? "Human" : "Assistant"}: ${turn.text}`)
     .join("\n\n");
   return [
-    "Continue the conversation below. Reply with your next assistant message only —",
-    "do not restate or summarise the transcript.",
+    "Continue the conversation below. Answer with your next assistant message only.",
+    "Do not repeat or summarise the transcript.",
     "",
     transcript,
   ].join("\n");

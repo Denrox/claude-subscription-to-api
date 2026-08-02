@@ -48,13 +48,13 @@ const VALID = {
 };
 
 describe("credentials", () => {
-  it("reports absence before anything is uploaded", () => {
+  it("reports that there is nothing before the first upload", () => {
     const s = new CredentialsService().readCredentialsStatus();
     expect(s.exists).toBe(false);
     expect(s.hasTokens).toBeNull();
   });
 
-  it("writes the file (creating ~/.claude) and reports metadata without tokens", () => {
+  it("writes the file, creates ~/.claude, and reports metadata without tokens", () => {
     const svc = new CredentialsService();
     const status = svc.writeCredentials(VALID);
     expect(status.exists).toBe(true);
@@ -69,7 +69,7 @@ describe("credentials", () => {
     expect(statSync(config.paths.credentials).mode & 0o777).toBe(0o600);
   });
 
-  it("accepts a raw JSON string body", () => {
+  it("accepts a raw JSON string as the body", () => {
     const status = new CredentialsService().writeCredentials(JSON.stringify(VALID));
     expect(status.hasTokens).toBe(true);
   });
@@ -80,7 +80,7 @@ describe("credentials", () => {
     expect(svc.readCredentialsStatus().expired).toBe(true);
   });
 
-  it("detects blanked tokens, which never self-heal", () => {
+  it("detects blank tokens, which never repair themselves", () => {
     const svc = new CredentialsService();
     svc.writeCredentials(VALID);
     writeFileSync(
@@ -90,7 +90,7 @@ describe("credentials", () => {
     expect(svc.readCredentialsStatus().hasTokens).toBe(false);
   });
 
-  it("rejects bad JSON and wrong shapes without touching disk", () => {
+  it("rejects bad JSON and wrong shapes without touching the disk", () => {
     const svc = new CredentialsService();
     expect(() => svc.writeCredentials("{nope")).toThrow(/valid JSON/);
     expect(() => svc.writeCredentials({ hasCompletedOnboarding: true })).toThrow(/claudeAiOauth/);
@@ -103,7 +103,7 @@ describe("credentials", () => {
     expect(svc.readCredentialsStatus().exists).toBe(false);
   });
 
-  it("reports a corrupt file as present but opaque", () => {
+  it("reports a broken file as present but unreadable", () => {
     const svc = new CredentialsService();
     svc.writeCredentials(VALID);
     writeFileSync(config.paths.credentials, "{ truncated");
@@ -114,7 +114,7 @@ describe("credentials", () => {
 });
 
 describe("cli config", () => {
-  it("round-trips ~/.claude.json and surfaces the account", () => {
+  it("writes and reads back ~/.claude.json and shows the account", () => {
     const svc = new CredentialsService();
     const status = svc.writeCliConfig({
       hasCompletedOnboarding: true,
@@ -126,7 +126,7 @@ describe("cli config", () => {
     expect(status.account).toBe("you@example.com");
   });
 
-  it("rewrites in place when the target is a bind-mounted file", () => {
+  it("rewrites the file in place when it is a bind mount", () => {
     const svc = new CredentialsService();
     svc.writeCliConfig({ hasCompletedOnboarding: false });
 

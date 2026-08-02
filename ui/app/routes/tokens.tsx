@@ -36,7 +36,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   const name = String(form.get("name") ?? "").trim();
-  if (!name) return { error: "Give the token a name so you can recognise it later." };
+  if (!name) return { error: "Give the token a name, so you can recognise it later." };
   const expiresInDays = String(form.get("expiresInDays") ?? "").trim();
 
   const res = await apiSend(
@@ -51,7 +51,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 function fmt(ts: number | null | undefined): string {
-  if (!ts) return "—";
+  if (!ts) return "-";
   return new Date(ts).toLocaleString();
 }
 
@@ -88,8 +88,8 @@ export default function Tokens({ loaderData, actionData }: Route.ComponentProps)
         <div>
           <h1 className="text-xl font-semibold tracking-tight">API tokens</h1>
           <p className="mt-1 text-sm text-slate-500">
-            A token authenticates calls to <code className="font-mono">/v1/messages</code>, which
-            runs this host's Claude CLI and answers in the Claude API's response shape. See{" "}
+            A token opens calls to <code className="font-mono">/v1/messages</code>. That endpoint
+            runs the Claude CLI of this host and answers in the shape of the Claude API. See{" "}
             <a className="underline hover:text-slate-700" href="/docs">
               the API docs
             </a>
@@ -107,17 +107,17 @@ export default function Tokens({ loaderData, actionData }: Route.ComponentProps)
       {created && (
         <section className="mt-8 rounded-md border border-green-300 bg-green-50 p-4">
           <h2 className="text-base font-semibold text-green-900">
-            Token created — copy it now
+            Token created, copy it now
           </h2>
           <p className="mt-1 text-sm text-green-800">
-            This is the only time it is shown. Nothing can read it back afterwards.
+            It is shown this one time. After that nothing can read it back.
           </p>
           <pre className="mt-3 overflow-x-auto rounded-md border border-green-200 bg-white p-3 font-mono text-sm text-slate-800">
             {created.token}
           </pre>
           <p className="mt-3 text-xs text-green-900">
-            Use it as <code className="font-mono">x-api-key</code> (or{" "}
-            <code className="font-mono">Authorization: Bearer …</code>), and point the Anthropic SDK
+            Send it as <code className="font-mono">x-api-key</code>, or as{" "}
+            <code className="font-mono">Authorization: Bearer …</code>, and point the Anthropic SDK
             at this host with <code className="font-mono">base_url</code>.
           </p>
         </section>
@@ -166,8 +166,8 @@ export default function Tokens({ loaderData, actionData }: Route.ComponentProps)
         <h2 className="text-base font-semibold text-slate-800">Existing tokens</h2>
         {tokens.length === 0 ? (
           <p className="mt-3 rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-500">
-            No tokens yet. Until one exists, <code className="font-mono">/v1/messages</code> rejects
-            every request.
+            No tokens yet. While there is none, <code className="font-mono">/v1/messages</code>
+            rejects every request.
           </p>
         ) : (
           <ul className="mt-3 divide-y divide-slate-100 rounded-md border border-slate-200 bg-white text-sm">

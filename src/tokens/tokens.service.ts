@@ -140,7 +140,7 @@ export class TokensService {
     try {
       parsed = JSON.parse(readFileSync(path, "utf8"));
     } catch (err: any) {
-      this.logger.error(`Could not parse ${path} (${err.message}) — starting with no tokens`);
+      this.logger.error(`Could not read ${path} (${err.message}), starting with no tokens`);
       return;
     }
 

@@ -14,7 +14,7 @@ function reject(body: unknown): AnthropicApiException {
 }
 
 describe("normalizeRequest", () => {
-  it("passes a single user turn through untouched", () => {
+  it("passes a single user turn through without changes", () => {
     const req = normalizeRequest({
       ...base,
       messages: [{ role: "user", content: "hello" }],
@@ -25,7 +25,7 @@ describe("normalizeRequest", () => {
     expect(req.system).toBeNull();
   });
 
-  it("joins text blocks within one message", () => {
+  it("joins the text blocks inside one message", () => {
     const req = normalizeRequest({
       ...base,
       messages: [
@@ -41,7 +41,7 @@ describe("normalizeRequest", () => {
     expect(req.prompt).toBe("one\ntwo");
   });
 
-  it("renders multi-turn history as a labelled transcript", () => {
+  it("turns a multi-turn history into a labelled transcript", () => {
     const req = normalizeRequest({
       ...base,
       messages: [
@@ -76,7 +76,7 @@ describe("normalizeRequest", () => {
     ).toBeNull();
   });
 
-  it("reports missing required fields the way the real API does", () => {
+  it("reports missing required fields the same way the real API does", () => {
     expect(reject({ max_tokens: 1, messages: [] }).errorType).toBe("invalid_request_error");
     expect(reject({ ...base, messages: [] }).getStatus()).toBe(400);
     expect(reject({ model: "m", messages: [{ role: "user", content: "hi" }] }).message).toContain(
@@ -86,7 +86,7 @@ describe("normalizeRequest", () => {
     expect(reject(null).message).toContain("JSON object");
   });
 
-  it("refuses content this proxy cannot forward", () => {
+  it("refuses the content this proxy cannot send further", () => {
     const image = reject({
       ...base,
       messages: [
@@ -107,7 +107,7 @@ describe("normalizeRequest", () => {
     ).toContain("user message");
   });
 
-  it("honours the stream flag", () => {
+  it("respects the stream flag", () => {
     expect(
       normalizeRequest({ ...base, stream: true, messages: [{ role: "user", content: "hi" }] })
         .stream,
@@ -124,7 +124,7 @@ describe("usageFromCli", () => {
     expect(usageFromCli({ input_tokens: "12" })).toEqual(emptyUsage());
   });
 
-  it("copies the counters the CLI reports", () => {
+  it("copies the counters that the CLI reports", () => {
     expect(
       usageFromCli({
         input_tokens: 12,
@@ -160,7 +160,7 @@ describe("buildMessage", () => {
     });
   });
 
-  it("omits the content block when the CLI said nothing", () => {
+  it("leaves out the content block when the CLI said nothing", () => {
     const message = buildMessage({ id: "msg_1", model: "m", text: "", usage: emptyUsage() });
     expect(message.content).toEqual([]);
   });

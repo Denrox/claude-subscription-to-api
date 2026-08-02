@@ -58,7 +58,7 @@ export class ClaudeService {
         reject(
           err.code === "ENOENT"
             ? new Error(
-                `claude CLI not found at "${config.claude.bin}" — check the CLAUDE_BIN mount`,
+                `claude CLI not found at "${config.claude.bin}", check the CLAUDE_BIN mount`,
               )
             : err,
         );

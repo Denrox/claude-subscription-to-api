@@ -88,7 +88,7 @@ describe("TokensService", () => {
     expect(() => svc.remove(view.id)).toThrow();
   });
 
-  it("rejects a nameless or absurd token request", () => {
+  it("rejects a token request with no name or a silly expiry", () => {
     const svc = service();
     expect(() => svc.create({ name: "  " })).toThrow();
     expect(() => svc.create({ name: "x".repeat(200) })).toThrow();
@@ -105,7 +105,7 @@ describe("TokensService", () => {
     expect(second.list()).toHaveLength(1);
   });
 
-  it("fails closed when the store is corrupt", () => {
+  it("rejects everything when the store is broken", () => {
     writeFileSync(config.api.tokensPath, "{ not json");
     const svc = service();
     expect(svc.list()).toEqual([]);

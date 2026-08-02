@@ -157,7 +157,7 @@ export class MessagesService {
     if (this.inFlight >= config.api.maxConcurrent) {
       throw new AnthropicApiException(
         "rate_limit_error",
-        `too many concurrent requests (limit ${config.api.maxConcurrent}) — retry shortly`,
+        `too many requests at the same time (limit ${config.api.maxConcurrent}), try again soon`,
       );
     }
     this.inFlight += 1;
@@ -182,7 +182,7 @@ export class MessagesService {
     } catch {
       throw new AnthropicApiException(
         "api_error",
-        `claude returned output that is not JSON: ${stdout.slice(0, 500)}`,
+        `claude returned something that is not JSON: ${stdout.slice(0, 500)}`,
       );
     }
     const failure = cliFailure(parsed);
@@ -213,7 +213,7 @@ export class MessagesService {
           onLine(JSON.parse(trimmed));
         } catch (err) {
           if (err instanceof AnthropicApiException) throw err;
-          this.logger.warn(`Skipping unparsable stream line: ${trimmed.slice(0, 200)}`);
+          this.logger.warn(`Stream line could not be parsed, skipping it: ${trimmed.slice(0, 200)}`);
         }
       }
     };
@@ -245,7 +245,7 @@ export class MessagesService {
       this.partialSupport = this.spawnCli(["--help"], null, null)
         .then((help) => help.includes("--include-partial-messages"))
         .catch((err) => {
-          this.logger.warn(`Could not probe claude --help (${err.message}); streaming per-turn`);
+          this.logger.warn(`Could not read claude --help (${err.message}), so streaming goes turn by turn`);
           return false;
         });
     }
@@ -314,7 +314,7 @@ export class MessagesService {
           err.code === "ENOENT"
             ? new AnthropicApiException(
                 "api_error",
-                `claude CLI not found at "${config.claude.bin}" — check the CLAUDE_BIN mount`,
+                `claude CLI not found at "${config.claude.bin}", check the CLAUDE_BIN mount`,
               )
             : new AnthropicApiException("api_error", err.message),
         );

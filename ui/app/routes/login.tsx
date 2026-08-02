@@ -10,7 +10,7 @@ export function loader({ request }: Route.LoaderArgs) {
 }
 
 const MESSAGES: Record<string, string> = {
-  invalid: "Wrong password.",
+  invalid: "The password is wrong.",
   throttled: "Too many attempts. Wait a few minutes and try again.",
 };
 
@@ -20,7 +20,7 @@ export default function Login({ loaderData }: Route.ComponentProps) {
     <main className="flex min-h-screen items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <h1 className="text-xl font-semibold tracking-tight">Claude credentials</h1>
-        <p className="mt-1 text-sm text-slate-500">Sign in to manage this host's Claude auth.</p>
+        <p className="mt-1 text-sm text-slate-500">Sign in to manage the Claude auth of this host.</p>
 
         <form method="post" action="/login" className="mt-6 space-y-3">
           <input type="hidden" name="next" value={next} />
@@ -34,7 +34,7 @@ export default function Login({ loaderData }: Route.ComponentProps) {
           />
           {error && (
             <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-              {MESSAGES[error] ?? "Sign-in failed."}
+              {MESSAGES[error] ?? "Sign in failed."}
             </p>
           )}
           <button className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">

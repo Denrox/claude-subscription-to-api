@@ -31,7 +31,7 @@ export class ApiTokenGuard implements CanActivate {
     if (!presented) {
       throw new AnthropicApiException(
         "authentication_error",
-        "missing API key — send it as the x-api-key header or Authorization: Bearer <token>",
+        "the API key is missing, send it in the x-api-key header or as Authorization: Bearer <token>",
       );
     }
 
@@ -39,7 +39,7 @@ export class ApiTokenGuard implements CanActivate {
     if (!record) {
       throw new AnthropicApiException(
         "authentication_error",
-        "invalid API key — it is unknown, revoked or expired",
+        "the API key is not valid, it is unknown, revoked or expired",
       );
     }
 

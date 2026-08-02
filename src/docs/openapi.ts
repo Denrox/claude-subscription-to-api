@@ -43,30 +43,30 @@ export function openapiDocument(): Record<string, unknown> {
       description: [
         "Two surfaces on one port.",
         "",
-        "`/v1/*` is an Anthropic-shaped proxy in front of this host's Claude CLI. A request",
-        "signed with a remote-clode API token is turned into a `claude -p` run and the CLI's",
-        "answer is returned in the Messages API response shape, so an Anthropic SDK pointed at",
-        "this base URL works unchanged for plain text conversations.",
+        "`/v1/*` stands in front of this host's Claude CLI and answers in the shape of the",
+        "Anthropic API. A request signed with a remote-clode API token becomes a `claude -p`",
+        "run, and the answer of the CLI comes back as a Messages API response. So an Anthropic",
+        "SDK pointed at this base URL works without changes for plain text conversations.",
         "",
-        "`/api/*` is the management surface used by the web UI and requires the login session",
-        "cookie. API tokens are created there and never work against `/api/*` themselves.",
+        "`/api/*` is the management surface for the web UI and needs the login session cookie.",
+        "API tokens are created there, but they do not work against `/api/*` themselves.",
         "",
         "**Differences from the real Claude API**",
         "",
-        "- Only `text` content blocks are accepted; images and documents are rejected.",
-        "- `tools` and `tool_choice` are rejected — the CLI owns its own tool set.",
-        "- `max_tokens` is validated but not enforced; the CLI decides how long to run.",
+        "- Only `text` content blocks are accepted. Images and documents are rejected.",
+        "- `tools` and `tool_choice` are rejected, because the CLI has its own tools.",
+        "- `max_tokens` is validated but not enforced. The CLI decides how long to run.",
         "- `temperature`, `top_p`, `top_k`, `stop_sequences`, `thinking` and `metadata` are ignored.",
-        "- A multi-turn `messages` array is flattened into a single labelled transcript prompt,",
-        "  because the CLI takes one prompt rather than a conversation.",
-        "- Streaming emits one text content block; usage arrives on `message_delta`.",
+        "- A multi-turn `messages` array becomes one prompt with labelled turns, because the",
+        "  CLI takes a single prompt and not a conversation.",
+        "- Streaming sends one text content block. Usage arrives on `message_delta`.",
         "- `POST /v1/messages/count_tokens` and the Batches, Files and Models capability",
         "  endpoints are not implemented.",
       ].join("\n"),
     },
     servers: [{ url: "/", description: "this host" }],
     tags: [
-      { name: "Messages", description: "Anthropic-shaped proxy to the Claude CLI" },
+      { name: "Messages", description: "The Claude CLI in the shape of the Anthropic API" },
       { name: "Tokens", description: "API token management (session cookie)" },
       { name: "Claude", description: "Credential and keep-alive management (session cookie)" },
     ],
@@ -76,7 +76,7 @@ export function openapiDocument(): Record<string, unknown> {
           tags: ["Messages"],
           summary: "Create a message",
           description:
-            "Runs the prompt through the host's Claude CLI and returns the result as a Messages API response. Set `stream: true` for a Server-Sent Events stream.",
+            "Runs the prompt through the Claude CLI of this host and returns the result as a Messages API response. Set `stream: true` to get a Server-Sent Events stream.",
           operationId: "createMessage",
           security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
           parameters: [
@@ -85,7 +85,7 @@ export function openapiDocument(): Record<string, unknown> {
               in: "header",
               required: false,
               schema: { type: "string", example: "2023-06-01" },
-              description: "Accepted for SDK compatibility and ignored.",
+              description: "Accepted so the SDKs are happy, and then ignored.",
             },
           ],
           requestBody: {
@@ -131,24 +131,24 @@ export function openapiDocument(): Record<string, unknown> {
           responses: {
             "200": {
               description:
-                "A completed message, or an SSE stream of `message_start`, `content_block_start`, `content_block_delta`, `content_block_stop`, `message_delta` and `message_stop` events when `stream` is true.",
+                "A finished message. When `stream` is true, an SSE stream of `message_start`, `content_block_start`, `content_block_delta`, `content_block_stop`, `message_delta` and `message_stop` events.",
               content: {
                 "application/json": { schema: { $ref: "#/components/schemas/Message" } },
                 "text/event-stream": { schema: { type: "string" } },
               },
             },
-            "400": errorResponse("Malformed or unsupported request"),
-            "401": errorResponse("Missing, unknown, revoked or expired API token"),
-            "429": errorResponse("Too many concurrent CLI runs"),
+            "400": errorResponse("The request is malformed or not supported"),
+            "401": errorResponse("The API token is missing, unknown, revoked or expired"),
+            "429": errorResponse("Too many CLI runs at the same time"),
             "500": errorResponse("The CLI failed"),
-            "529": errorResponse("The CLI timed out"),
+            "529": errorResponse("The CLI ran out of time"),
           },
         },
       },
       "/v1/models": {
         get: {
           tags: ["Messages"],
-          summary: "List the models this host will pass to the CLI",
+          summary: "List the models this host gives to the CLI",
           operationId: "listModels",
           security: [{ apiKeyAuth: [] }, { bearerAuth: [] }],
           responses: {
@@ -156,7 +156,7 @@ export function openapiDocument(): Record<string, unknown> {
               description: "Model list",
               content: { "application/json": { schema: { $ref: "#/components/schemas/ModelList" } } },
             },
-            "401": errorResponse("Missing or invalid API token"),
+            "401": errorResponse("The API token is missing or invalid"),
           },
         },
       },
@@ -168,7 +168,7 @@ export function openapiDocument(): Record<string, unknown> {
           security: [{ sessionCookie: [] }],
           responses: {
             "200": {
-              description: "Token metadata. Secrets are never returned.",
+              description: "Token metadata. The secrets are never returned.",
               content: {
                 "application/json": {
                   schema: {
@@ -180,13 +180,13 @@ export function openapiDocument(): Record<string, unknown> {
                 },
               },
             },
-            "401": { description: "No session cookie" },
+            "401": { description: "There is no session cookie" },
           },
         },
         post: {
           tags: ["Tokens"],
           summary: "Create an API token",
-          description: "The plaintext token is returned once and cannot be retrieved again.",
+          description: "The token itself is returned one time and cannot be read again.",
           operationId: "createToken",
           security: [{ sessionCookie: [] }],
           requestBody: {
@@ -202,7 +202,7 @@ export function openapiDocument(): Record<string, unknown> {
                       type: ["number", "null"],
                       minimum: 1,
                       maximum: 3650,
-                      description: "Omit for a token that never expires.",
+                      description: "Leave it out to get a token that never expires.",
                     },
                   },
                 },
@@ -211,7 +211,7 @@ export function openapiDocument(): Record<string, unknown> {
           },
           responses: {
             "201": {
-              description: "The created token, including its one-time secret",
+              description: "The created token, together with its secret, shown one time",
               content: {
                 "application/json": {
                   schema: {
@@ -229,8 +229,8 @@ export function openapiDocument(): Record<string, unknown> {
                 },
               },
             },
-            "400": { description: "Invalid name or expiry" },
-            "401": { description: "No session cookie" },
+            "400": { description: "The name or the expiry is invalid" },
+            "401": { description: "There is no session cookie" },
           },
         },
       },
@@ -246,30 +246,30 @@ export function openapiDocument(): Record<string, unknown> {
               description: "The revoked token",
               content: { "application/json": { schema: { $ref: "#/components/schemas/ApiToken" } } },
             },
-            "404": { description: "No such token" },
+            "404": { description: "There is no such token" },
           },
         },
       },
       "/api/tokens/{id}": {
         delete: {
           tags: ["Tokens"],
-          summary: "Delete an API token permanently",
+          summary: "Delete an API token for good",
           operationId: "deleteToken",
           security: [{ sessionCookie: [] }],
           parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
           responses: {
             "200": { description: "Deleted" },
-            "404": { description: "No such token" },
+            "404": { description: "There is no such token" },
           },
         },
       },
       "/api/claude/status": {
         get: {
           tags: ["Claude"],
-          summary: "Credential, CLI config and keep-alive status",
+          summary: "Status of the credentials, the CLI config and the keep-alive",
           operationId: "claudeStatus",
           security: [{ sessionCookie: [] }],
-          responses: { "200": { description: "Status payload rendered by the dashboard" } },
+          responses: { "200": { description: "The payload the dashboard shows" } },
         },
       },
       "/api/claude/credentials": {
@@ -282,7 +282,7 @@ export function openapiDocument(): Record<string, unknown> {
             required: true,
             content: { "application/json": { schema: { type: "object" } } },
           },
-          responses: { "200": { description: "Saved" }, "400": { description: "Invalid shape" } },
+          responses: { "200": { description: "Saved" }, "400": { description: "The shape is wrong" } },
         },
       },
       "/api/claude/cli-config": {
@@ -295,16 +295,16 @@ export function openapiDocument(): Record<string, unknown> {
             required: true,
             content: { "application/json": { schema: { type: "object" } } },
           },
-          responses: { "200": { description: "Saved" }, "400": { description: "Invalid shape" } },
+          responses: { "200": { description: "Saved" }, "400": { description: "The shape is wrong" } },
         },
       },
       "/api/claude/refresh": {
         post: {
           tags: ["Claude"],
-          summary: "Run the keep-alive ping now",
+          summary: "Run the keep-alive ping right now",
           operationId: "refreshNow",
           security: [{ sessionCookie: [] }],
-          responses: { "200": { description: "Ping result, including failures" } },
+          responses: { "200": { description: "The result of the ping, failures included" } },
         },
       },
       "/health": {
@@ -322,12 +322,12 @@ export function openapiDocument(): Record<string, unknown> {
           type: "apiKey",
           in: "header",
           name: "x-api-key",
-          description: "A remote-clode API token, as the real Claude API expects its key.",
+          description: "A remote-clode API token, in the place where the real Claude API waits for its key.",
         },
         bearerAuth: {
           type: "http",
           scheme: "bearer",
-          description: "The same token as `Authorization: Bearer <token>`.",
+          description: "The same token, sent as `Authorization: Bearer <token>`.",
         },
         sessionCookie: { type: "apiKey", in: "cookie", name: "rc_session" },
       },
@@ -357,13 +357,13 @@ export function openapiDocument(): Record<string, unknown> {
           properties: {
             model: {
               type: "string",
-              description: "Passed straight to `claude --model`. Aliases such as `opus` work.",
+              description: "Goes straight to `claude --model`. Short names like `opus` work too.",
               examples: config.api.models,
             },
             max_tokens: {
               type: "integer",
               minimum: 1,
-              description: "Required for API compatibility; not enforced by the CLI.",
+              description: "Required so the API shape matches. The CLI does not enforce it.",
             },
             messages: {
               type: "array",
@@ -427,8 +427,8 @@ export function openapiDocument(): Record<string, unknown> {
           properties: {
             id: { type: "string", example: "tok_9c1f…" },
             name: { type: "string" },
-            prefix: { type: "string", description: "Leading characters of the secret." },
-            createdAt: { type: "integer", description: "Unix epoch milliseconds." },
+            prefix: { type: "string", description: "The first characters of the secret." },
+            createdAt: { type: "integer", description: "Unix time in milliseconds." },
             expiresAt: { type: ["integer", "null"] },
             lastUsedAt: { type: ["integer", "null"] },
             revokedAt: { type: ["integer", "null"] },

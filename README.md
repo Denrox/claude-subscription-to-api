@@ -1,8 +1,11 @@
 # remote-clode
 
-Keeps this host's Claude CLI authenticated from a browser, and lends it out at
-`/v1/messages` in the Anthropic API shape. NestJS + React Router 7, one
-container, one process, one port.
+Keeps the Claude CLI on this host logged in, and gives access to it over HTTP at
+`/v1/messages`, in the same shape the Anthropic API uses. NestJS plus React
+Router 7, one container, one process, one port.
+
+I made it because I have a subscription and no API key, and I still wanted to
+test clients that talk to the API.
 
 ## Run
 
@@ -12,47 +15,53 @@ cp .env.example .env          # HOST_HOME, HOST_UID/HOST_GID, AUTH_PASSWORD
 docker compose up -d --build
 ```
 
-Then paste `~/.claude/.credentials.json`, from a machine where you are already
-logged in, into the Credentials box at `http://localhost`.
+Then open `http://localhost` and paste `~/.claude/.credentials.json` into the
+credentials box. Take the file from a machine where you are already logged in.
 
-Compose bind-mounts your real `~/.claude`, `~/.claude.json` and the host's
-`claude` binary, and runs as your uid:gid, so the browser and an SSH session
-share one set of credentials and one CLI. Create the two files before the first
-`up`: docker makes a *directory* where a missing file mount points.
+Compose mounts the real `~/.claude`, `~/.claude.json` and the host's `claude`
+binary, and the container runs as your uid and gid. So the browser and an SSH
+session use the same credentials and the same CLI. Create those two files before
+the first `up`. If a file is missing, docker makes a directory in its place.
 
 ## Auth
 
-`auth.middleware.ts` runs before both routers and lets through only `/login`,
-`/logout`, `/health`, hashed assets and `/v1/*`, which an API token guards one
-layer down. A new route is protected the moment it exists.
+`auth.middleware.ts` runs before both routers. It allows only `/login`,
+`/logout`, `/health`, the hashed assets and `/v1/*`, and an API token guards
+`/v1/*` one layer below. A new route is closed from the moment it exists.
 
-Session cookies cannot call `/v1`, API tokens cannot call `/api`. Management
-GETs return metadata, never the tokens. Sessions are stateless HMACs, so
-rotating `SESSION_SECRET` is the only way to revoke one.
+A session cookie cannot call `/v1`, and an API token cannot call `/api`.
+Management GETs return metadata, never the tokens. Sessions are stateless HMACs,
+so the only way to revoke one is to rotate `SESSION_SECRET`.
 
 ## Keep-alive
 
-The app never performs the OAuth exchange itself. The CLI owns
-`.credentials.json` and rotates on every run, so a second refresher racing it
-leaves blank tokens, which never self-heal. The timer just runs `claude -p hi`
-on the cheapest model every two hours and lets the CLI decide.
+The app does not do the OAuth exchange itself. The CLI owns
+`.credentials.json` and rotates it on every run, so a second refresher working on
+the same file leaves blank tokens, and that state never repairs itself. The timer
+only runs `claude -p hi` on the cheapest model every two hours, and the CLI
+decides what to do.
 
-`no rotation` is the healthy log line. `no tokens` means the CLI blanked them
-after a rejected refresh: run `claude setup-token` elsewhere and re-upload.
+`no rotation` in the log is normal, it means the token still had time left.
+`no tokens` means the CLI blanked them after a rejected refresh. Then run
+`claude setup-token` on another machine and upload the result again.
 
 ## API
 
-Mint a token on the API tokens page and send it as `x-api-key`. Only its
-SHA-256 is stored, so the plaintext exists once, on screen.
+Create a token on the API tokens page and send it as `x-api-key`. Only its
+SHA-256 is stored, so the token itself is visible one time, right after you
+create it.
 
-It is a CLI in a trench coat: text only, no images, no `tools`, `max_tokens`
-validated but not enforced, sampling params ignored, multi-turn `messages`
-flattened into one `Human:`/`Assistant:` prompt. Errors use the real envelope so
-the official SDKs retry correctly. Billing is the subscription, not per token.
+Behind the endpoint there is a CLI, not a raw model, so a few things are
+different. Text only, no images, no `tools`. `max_tokens` is validated but not
+enforced. Sampling parameters are ignored. A multi-turn `messages` array becomes
+one prompt with `Human:` and `Assistant:` labels. Errors use the real error
+envelope, so the official SDKs retry the way they should. Billing goes to the
+subscription and not per token.
 
-`API_ALLOW_TOOLS=1` hands every token holder Bash on this host. Homelab only.
+`API_ALLOW_TOOLS=1` gives everyone who holds a token a shell on this host. This
+is for a homelab, not for the internet.
 
-`GET /docs` is the endpoint reference. Config lives in `.env.example`.
+`GET /docs` lists the endpoints. Config lives in `.env.example`.
 
 ## Development
 
@@ -62,5 +71,5 @@ npm run build && AUTH_PASSWORD=dev SESSION_SECRET=dev npm start
 npm test
 ```
 
-The UI is built, not dev-served, because it is mounted into the API process.
-`npm run dev` watches both.
+The UI is built and not served by a dev server, because it runs inside the API
+process. `npm run dev` watches both.

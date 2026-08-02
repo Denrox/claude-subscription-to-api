@@ -91,7 +91,7 @@ export class RefreshService implements OnModuleInit, OnModuleDestroy {
       this.history.unshift(result);
       if (this.history.length > HISTORY_LIMIT) this.history.length = HISTORY_LIMIT;
       if (ok) {
-        this.logger.log(`Ping ok (${trigger}) — ${result.rotated ? "rotated" : "no rotation"}`);
+        this.logger.log(`Ping ok (${trigger}): ${result.rotated ? "rotated" : "no rotation"}`);
       } else {
         this.logger.warn(`Ping failed (${trigger}): ${error}`);
       }
@@ -99,10 +99,10 @@ export class RefreshService implements OnModuleInit, OnModuleDestroy {
     };
 
     if (!before.exists) {
-      return record(false, "no credentials file — upload one first", null);
+      return record(false, "there is no credentials file, upload one first", null);
     }
     if (before.hasTokens === false) {
-      return record(false, "credentials are blank — re-authenticate and upload again", null);
+      return record(false, "the credentials are blank, log in again and upload them once more", null);
     }
 
     try {
@@ -113,7 +113,7 @@ export class RefreshService implements OnModuleInit, OnModuleDestroy {
 
     const after = this.credentials.readCredentialsStatus();
     if (after.hasTokens === false) {
-      return record(false, "the refresh blanked the tokens — re-authenticate", after.expiresAt);
+      return record(false, "the refresh left the tokens blank, log in again", after.expiresAt);
     }
     return record(true, null, after.expiresAt);
   }

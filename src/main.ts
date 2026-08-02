@@ -39,11 +39,11 @@ async function bootstrap() {
   const logger = new Logger("bootstrap");
 
   if (!passwordConfigured) {
-    logger.error("Set AUTH_PASSWORD or AUTH_PASSWORD_HASH — refusing to start without a password.");
+    logger.error("Set AUTH_PASSWORD or AUTH_PASSWORD_HASH. Without a password this does not start.");
     process.exit(1);
   }
   if (sessionSecretIsEphemeral) {
-    logger.warn("SESSION_SECRET is unset — using a random per-boot secret; restarts log you out.");
+    logger.warn("SESSION_SECRET is not set, so the secret is random on every boot. A restart logs you out.");
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -71,14 +71,14 @@ async function bootstrap() {
         `max ${config.api.maxConcurrent} concurrent), tokens in ${config.api.tokensPath}`,
     );
   } else {
-    logger.warn("API_ENABLED=0 — /v1 rejects every request");
+    logger.warn("API_ENABLED=0, so /v1 rejects every request");
   }
 }
 
 async function mountUi(app: NestExpressApplication, logger: Logger): Promise<void> {
   const handler = await createUiHandler();
   if (!handler) {
-    logger.warn(`No UI build at ${config.uiBuildDir} — API only. Run: npm run build:ui`);
+    logger.warn(`No UI build at ${config.uiBuildDir}, so only the API runs. Run: npm run build:ui`);
     return;
   }
 

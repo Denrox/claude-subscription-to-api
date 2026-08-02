@@ -8,7 +8,7 @@ describe("cliFailure", () => {
     expect(cliFailure("nonsense")).toBeNull();
   });
 
-  it("surfaces the CLI's own message rather than its raw JSON", () => {
+  it("shows the message of the CLI and not its raw JSON", () => {
     const failure = cliFailure({
       is_error: true,
       subtype: "success",
@@ -18,7 +18,7 @@ describe("cliFailure", () => {
     expect(failure?.message).toBe("There's an issue with the selected model (not-a-model).");
   });
 
-  it("maps the upstream status onto the matching Anthropic error type", () => {
+  it("maps the upstream status to the matching Anthropic error type", () => {
     expect(cliFailure({ is_error: true, api_error_status: 404 })?.errorType).toBe(
       "not_found_error",
     );
@@ -28,14 +28,14 @@ describe("cliFailure", () => {
     );
   });
 
-  it("falls back to api_error when the CLI reports no upstream status", () => {
+  it("uses api_error when the CLI reports no upstream status", () => {
     const failure = cliFailure({ is_error: true, subtype: "error_during_execution" });
     expect(failure?.errorType).toBe("api_error");
     expect(failure?.getStatus()).toBe(500);
     expect(failure?.message).toContain("error_during_execution");
   });
 
-  it("treats a non-success subtype as a failure even without is_error", () => {
+  it("treats a subtype that is not success as a failure, even without is_error", () => {
     expect(cliFailure({ subtype: "error_max_turns" })?.errorType).toBe("api_error");
   });
 });

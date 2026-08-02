@@ -10,7 +10,7 @@ import {
 const SECRET = "test-secret";
 
 describe("session tokens", () => {
-  it("round-trips an issued token", () => {
+  it("issues a token and reads it back", () => {
     const now = 1_000_000;
     const token = issueSession(SECRET, 60_000, now);
     expect(verifySession(SECRET, token, now + 1000)).toBe(now + 60_000);
@@ -27,7 +27,7 @@ describe("session tokens", () => {
     expect(verifySession(SECRET, token, 1)).toBeNull();
   });
 
-  it("rejects a token whose expiry was tampered with", () => {
+  it("rejects a token where the expiry was changed", () => {
     const token = issueSession(SECRET, 60_000, 0);
     const forged = `${9_999_999_999_999}.${token.split(".")[1]}`;
     expect(verifySession(SECRET, forged, 1)).toBeNull();
@@ -52,7 +52,7 @@ describe("passwords", () => {
     expect(verifyPassword("hunter2 ", { passwordHash: hash })).toBe(false);
   });
 
-  it("prefers the hash when both are configured", () => {
+  it("takes the hash when both are configured", () => {
     const hash = hashPassword("from-hash");
     expect(verifyPassword("from-plain", { password: "from-plain", passwordHash: hash })).toBe(false);
     expect(verifyPassword("from-hash", { password: "from-plain", passwordHash: hash })).toBe(true);
@@ -66,7 +66,7 @@ describe("passwords", () => {
 });
 
 describe("login throttle", () => {
-  it("blocks after max failures and forgets them after the window", () => {
+  it("blocks after the maximum of failures and forgets them after the window", () => {
     const t = new LoginThrottle(3, 1000);
     for (let i = 0; i < 3; i++) t.recordFailure("ip", 100);
     expect(t.blocked("ip", 200)).toBe(true);
