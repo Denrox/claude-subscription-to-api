@@ -55,7 +55,7 @@ export const config = {
     tokensPath:
       process.env.API_TOKENS_PATH || join(claudeHome, ".claude", "claude-subscription-to-api-tokens.json"),
     timeoutMs: int("API_TIMEOUT_MS", 10 * 60 * 1000),
-    maxConcurrent: int("API_MAX_CONCURRENT", 2),
+    maxConcurrent: int("API_MAX_CONCURRENT", 4),
     allowTools: bool("API_ALLOW_TOOLS", false),
     systemPromptMode: process.env.API_SYSTEM_PROMPT_MODE === "append" ? "append" : "replace",
     partialMessages: bool("API_PARTIAL_MESSAGES", true),
